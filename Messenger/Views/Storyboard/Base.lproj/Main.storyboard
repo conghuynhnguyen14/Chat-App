@@ -19,8 +19,8 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </tabBar>
                     <connections>
-                        <segue destination="Swz-84-6Ib" kind="relationship" relationship="viewControllers" id="4m0-cN-EP4"/>
                         <segue destination="WV4-Sd-xV5" kind="relationship" relationship="viewControllers" id="4Y0-vr-TfP"/>
+                        <segue destination="Swz-84-6Ib" kind="relationship" relationship="viewControllers" id="4m0-cN-EP4"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cy5-Cv-Akm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

@@ -7,10 +7,12 @@
 
 import UIKit
 import FirebaseAuth
+import JGProgressHUD
 
 
 class RegisterViewController: UIViewController {
-
+    
+    private let spinner = JGProgressHUD(style: .dark)
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.clipsToBounds = true
@@ -174,26 +176,43 @@ class RegisterViewController: UIViewController {
                 alertUserLoginError()
                 return
         }
-        
+        spinner.show(in: view)
+        //Firebase Logg in
         DatabaseManager.shared.userExists(with: email) { [weak self](exists) in
             guard let strongSelf = self else {
                 return
+            }
+            DispatchQueue.main.async {
+                strongSelf.spinner.dismiss()
             }
             guard !exists else {
                 strongSelf.alertUserLoginError(message: "Looks like an user account address already exist")
                 return
             }
-            FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { authResult, error in
+            FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
                 
                 guard authResult != nil, error == nil else {
                     print("Error creating user")
                     return
                 }
-                DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email))
+                
+                // insert user into database
+                let  chatUser = ChatAppUser (firstName: firstName, lastName: lastName, emailAddress: email)
+                DatabaseManager.shared.insertUser(with: chatUser) { success in
+                    if success {
+                        //upload image
+                        guard let image = strongSelf.imageView.image,
+                              let data = image.pngData() else {
+                            return
+                        }
+                        let fileName = chatUser.profileImageFileName
+                        StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName) { result in
+                            }
+                        }
+                }}
                 strongSelf.navigationController?.dismiss(animated: true, completion: nil)
-            })
+            }
         }
-    }
     
     func alertUserLoginError(message: String = "Please enter all information"){
         let alert = UIAlertController(title: "Woops", message: message , preferredStyle: .alert)
@@ -207,6 +226,7 @@ class RegisterViewController: UIViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
 }
+
 extension RegisterViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == emailField {
